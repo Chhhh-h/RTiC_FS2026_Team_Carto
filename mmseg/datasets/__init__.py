@@ -11,8 +11,8 @@ from .stare import STAREDataset
 from .voc import PascalVOCDataset
 from .mapillary import MapillaryDataset
 from .cocostuff import CocoStuff
-from .map_dataset import MapDataset # 导入新数据集
-from .map_background_dataset import MapBackgroundDataset # 导入新数据集
+from .map_dataset import MapDataset # import new daasets
+from .map_background_dataset import MapBackgroundDataset # # import new daasets
 
 __all__ = [
     'CustomDataset', 'build_dataloader', 'ConcatDataset', 'RepeatDataset',

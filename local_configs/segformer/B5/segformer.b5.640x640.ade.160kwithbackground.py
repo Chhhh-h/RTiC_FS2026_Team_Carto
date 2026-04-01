@@ -92,7 +92,7 @@ model = dict(
         norm_cfg=norm_cfg,
         align_corners=False,
         decoder_params=dict(embed_dim=768),
-        loss_decode=dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+        loss_decode=dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0), class_weight=[0.2,0.757,0.2,1.3645,2.6128,1.3925,1.1699,0.4175]), # 修改损失函数权重
     # model training and testing settings
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
