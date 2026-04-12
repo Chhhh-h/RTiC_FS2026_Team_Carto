@@ -2,7 +2,7 @@ _base_ = [
     '../../_base_/models/segformer.py',
     # '../../_base_/datasets/ade20k_repeat.py',
     '../../_base_/default_runtime.py',
-    '../../_base_/schedules/schedule_40k_adamw.py'
+    '../../_base_/schedules/schedule_160k_adamw.py'
 ]
 
 # data settings
@@ -63,10 +63,10 @@ data = dict(
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        # img_dir='patches_640_split/images/validation',
-        # ann_dir='patches_640_split/annotations/validation_background',
-        img_dir='test_patches',
-        ann_dir=None,
+        img_dir='patches_640_split/images/validation',
+        ann_dir='patches_640_split/annotations/validation_background',
+        # img_dir='test_patches_640',
+        # ann_dir=None,
         img_suffix='.png',
         seg_map_suffix='.tif',
         pipeline=test_pipeline))
@@ -92,7 +92,24 @@ model = dict(
         norm_cfg=norm_cfg,
         align_corners=False,
         decoder_params=dict(embed_dim=768),
-        loss_decode=dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0), class_weight=[0.2,0.757,0.2,1.3645,2.6128,1.3925,1.1699,0.4175]), # 修改损失函数权重
+        #交叉熵损失+类别平衡
+        # loss_decode=dict( 
+        #     type='CrossEntropyLoss',
+        #     use_sigmoid=False,
+        #     loss_weight=1.0,
+        #     class_weight=[0.0089, 0.3343, 0.0192, 1.0651, 4.2411, 1.3391, 0.8709, 0.1213])),
+
+        # 交叉熵损失+Dice损失+类别平衡
+        loss_decode=dict(
+            type='CEDiceLoss',
+            loss_weight=1.0,
+            ce_weight=1.0,
+            dice_weight=1.0,
+            class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002])), # 修改损失函数权重
+        
+        # 倒数平方根类别平衡：class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002]
+        # 倒数归一化： class_weight = [0.0089, 0.3343, 0.0192, 1.0651, 4.2411, 1.3391, 0.8709, 0.1213]
+    
     # model training and testing settings
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
