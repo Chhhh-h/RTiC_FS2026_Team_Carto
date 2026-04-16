@@ -2,7 +2,7 @@ _base_ = [
     '../../_base_/models/segformer.py',
     # '../../_base_/datasets/ade20k_repeat.py',
     '../../_base_/default_runtime.py',
-    '../../_base_/schedules/schedule_160k_adamw.py'
+    '../../_base_/schedules/schedule_80k_adamw.py'
 ]
 
 # data settings
@@ -39,8 +39,12 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=4,
     workers_per_gpu=4,
+    train_sampler=dict(
+        type='WeightedRandomSampler',
+        weights_file='/cluster/scratch/pangyi/reto/data/patches_640_split/sample_weights.npy',
+        replacement=True),
     train=dict(
         type='RepeatDataset',
         times=50,
@@ -63,10 +67,10 @@ data = dict(
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir='patches_640_split/images/validation',
-        ann_dir='patches_640_split/annotations/validation_background',
-        # img_dir='test_patches_640',
-        # ann_dir=None,
+        # img_dir='patches_640_split/images/validation',
+        # ann_dir='patches_640_split/annotations/validation_background',
+        img_dir='test_patches_640_overlap320',
+        ann_dir=None,
         img_suffix='.png',
         seg_map_suffix='.tif',
         pipeline=test_pipeline))
@@ -92,7 +96,7 @@ model = dict(
         norm_cfg=norm_cfg,
         align_corners=False,
         decoder_params=dict(embed_dim=768),
-        #交叉熵损失+类别平衡
+        # #交叉熵损失+类别平衡
         # loss_decode=dict( 
         #     type='CrossEntropyLoss',
         #     use_sigmoid=False,

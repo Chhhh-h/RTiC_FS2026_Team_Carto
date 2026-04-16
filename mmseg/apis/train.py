@@ -38,6 +38,11 @@ def train_segmentor(model,
                     meta=None):
     """Launch segmentor training."""
     logger = get_root_logger(cfg.log_level)
+    train_sampler_cfg = cfg.data.get('train_sampler', None)
+    if train_sampler_cfg is None:
+        logger.info('Train sampler: default sampler (no weighted sampling)')
+    else:
+        logger.info(f'Train sampler config: {train_sampler_cfg}')
 
     # prepare data loaders
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
@@ -50,7 +55,8 @@ def train_segmentor(model,
             len(cfg.gpu_ids),
             dist=distributed,
             seed=cfg.seed,
-            drop_last=True) for ds in dataset
+            drop_last=True,
+            sampler_cfg=train_sampler_cfg) for ds in dataset
     ]
 
     # put model on gpus

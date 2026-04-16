@@ -7,7 +7,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=24G
-#SBATCH --gpus=rtx_4090:1
+#SBATCH --gpus=rtx_3090:1
 
 module load eth_proxy
 nvidia-smi
@@ -21,8 +21,8 @@ cd /cluster/scratch/pangyi/reto/SegFormer || exit 1
 mkdir -p logs
 
 python /cluster/scratch/pangyi/reto/SegFormer/tools/test.py local_configs/segformer/B5/segformer.b5.640x640.ade.160kwithbackground.py \
-    /cluster/scratch/pangyi/reto/expt_results/b5_640_40k_classweight/latest.pth \
-    --out /cluster/scratch/pangyi/reto/submission_result/expt9_b5_class_40k/submission_results.pkl \
+    /cluster/scratch/pangyi/reto/expt_results/b5_640_160k_recipclassweight_batch4/iter_56000.pth \
+    --out /cluster/scratch/pangyi/reto/submission_result/expt15_b5_moreclass_4batch_160k/submission_results.pkl \
     
 
 echo "Job finished at $(date)"

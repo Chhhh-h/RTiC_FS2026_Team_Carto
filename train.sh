@@ -23,10 +23,9 @@ mkdir -p logs
 
 python /cluster/scratch/pangyi/reto/SegFormer/tools/train.py \
     local_configs/segformer/B5/segformer.b5.640x640.ade.160kwithbackground.py \
-    --work-dir /cluster/scratch/pangyi/reto/expt_results/b5_640_160k_classweight_batch2_cedice
+    --work-dir /cluster/scratch/pangyi/reto/expt_results/160k_batch4_cedice_weightedsample \
 
-# 如果需要从已有权重继续训练，取消下面这一行注释即可
-# --load-from /cluster/scratch/pangyi/reto/expt_results/b5_640_40k_classweight/latest.pth
+
  
 
 echo "Job finished at $(date)"
