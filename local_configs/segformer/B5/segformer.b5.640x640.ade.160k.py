@@ -6,7 +6,7 @@ _base_ = [
 ]
 
 # data settings
-dataset_type = 'MapDataset'
+dataset_type = 'MapBackgroundDataset'
 data_root = '/cluster/scratch/pangyi/reto/data'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -39,7 +39,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=4,
     workers_per_gpu=4,
     train=dict(
         type='RepeatDataset',
@@ -48,7 +48,7 @@ data = dict(
             type=dataset_type,
             data_root=data_root,
             img_dir='patches_640_split/images/training',
-            ann_dir='patches_640_split/annotations/training',
+            ann_dir='patches_640_split/annotations/training_background',
             img_suffix='.png',
             seg_map_suffix='.tif', # 
             pipeline=train_pipeline)),
@@ -56,7 +56,7 @@ data = dict(
         type=dataset_type,
         data_root=data_root,
         img_dir='patches_640_split/images/validation',
-        ann_dir='patches_640_split/annotations/validation',
+        ann_dir='patches_640_split/annotations/validation_background',
         img_suffix='.png',
         seg_map_suffix='.tif',
         pipeline=test_pipeline),
@@ -64,8 +64,8 @@ data = dict(
         type=dataset_type,
         data_root=data_root,
         img_dir='patches_640_split/images/validation',
-        ann_dir='patches_640_split/annotations/validation',
-        # img_dir='test_patches',
+        ann_dir='patches_640_split/annotations/validation_background',
+        # img_dir='test_patches_640_overlap320',
         # ann_dir=None,
         img_suffix='.png',
         seg_map_suffix='.tif',
@@ -88,11 +88,34 @@ model = dict(
         feature_strides=[4, 8, 16, 32],
         channels=128,
         dropout_ratio=0.1,
-        num_classes=7, # 修改类别数
+        num_classes=8, # 修改类别数
         norm_cfg=norm_cfg,
         align_corners=False,
         decoder_params=dict(embed_dim=768),
-        loss_decode=dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+        # OHEM cedice loss
+        loss_decode=dict(
+            type='CEDiceOHEMLoss',
+            class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002],
+            ce_weight=1.0,
+            dice_weight=1.0,
+            smooth=1.0,
+            exponent=2.0,
+            loss_weight=1.0,
+            thresh=None,
+            min_kept=100000 # 只取 hardest 的 10 万个有效像素
+        )),
+
+        # cedice loss
+        # loss_decode=dict(
+        #     type='CEDiceLoss',
+        #     loss_weight=1.0,
+        #     ce_weight=1.0,
+        #     dice_weight=1.0,
+        #     class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002])), # 修改损失函数权重
+        
+        # 倒数平方根类别平衡：class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002]
+        # 倒数归一化： class_weight = [0.0089, 0.3343, 0.0192, 1.0651, 4.2411, 1.3391, 0.8709, 0.1213]
+    
     # model training and testing settings
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
@@ -110,5 +133,5 @@ lr_config = dict(_delete_=True, policy='poly',
                  warmup_ratio=1e-6,
                  power=1.0, min_lr=0.0, by_epoch=False)
 
-evaluation = dict(interval=16000, metric='mIoU')
+evaluation = dict(interval=4000, metric='mIoU')
 

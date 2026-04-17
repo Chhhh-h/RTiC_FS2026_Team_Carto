@@ -22,8 +22,8 @@ cd /cluster/scratch/pangyi/reto/SegFormer || exit 1
 mkdir -p logs
 
 python /cluster/scratch/pangyi/reto/SegFormer/tools/train.py \
-    local_configs/segformer/B5/segformer.b5.640x640.ade.160kwithbackground.py \
-    --work-dir /cluster/scratch/pangyi/reto/expt_results/160k_batch4_cedice_weightedsample \
+    local_configs/segformer/B5/segformer.b5.640x640.ade.160k.py \
+    --work-dir /cluster/scratch/pangyi/reto/expt_results/160k_batch4_ohemcedice \
 
 
  

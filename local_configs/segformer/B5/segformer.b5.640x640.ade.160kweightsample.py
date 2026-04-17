@@ -2,7 +2,7 @@ _base_ = [
     '../../_base_/models/segformer.py',
     # '../../_base_/datasets/ade20k_repeat.py',
     '../../_base_/default_runtime.py',
-    '../../_base_/schedules/schedule_80k_adamw.py'
+    '../../_base_/schedules/schedule_160k_adamw.py'
 ]
 
 # data settings
@@ -67,10 +67,10 @@ data = dict(
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        # img_dir='patches_640_split/images/validation',
-        # ann_dir='patches_640_split/annotations/validation_background',
-        img_dir='test_patches_640_overlap320',
-        ann_dir=None,
+        img_dir='patches_640_split/images/validation',
+        ann_dir='patches_640_split/annotations/validation_background',
+        # img_dir='test_patches_640_overlap320',
+        # ann_dir=None,
         img_suffix='.png',
         seg_map_suffix='.tif',
         pipeline=test_pipeline))

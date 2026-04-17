@@ -105,4 +105,4 @@ dependencies:
       - traitlets==5.14.3
       - wcwidth==0.6.0
       - yapf==0.30.0
-prefix: /cluster/home/pangyi/miniconda3/envs/segformer_py38
+
