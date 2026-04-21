@@ -4,11 +4,11 @@ from PIL import Image
 from collections import Counter
 from tqdm import tqdm
 
-# ========= 配置部分 =========
+
 label_dir = r"/cluster/scratch/pangyi/reto/data/patches_640_split/annotations/training_background"
 num_classes = 8
 suffixes = (".png", ".tif", ".tiff", ".jpg")
-# ==========================
+
 
 pixel_counter = Counter()
 total_pixels = 0
@@ -20,18 +20,11 @@ for fname in tqdm(label_files, desc="Processing labels"):
 
     mask = np.array(Image.open(path))
 
-    # 如果标签图不是单通道，报错提醒
-    if mask.ndim != 2:
-        raise ValueError(f"{fname} 不是单通道标签图，shape={mask.shape}")
-
     total_pixels += mask.size
 
     unique, counts = np.unique(mask, return_counts=True)
     for cls_id, cnt in zip(unique, counts):
         pixel_counter[int(cls_id)] += int(cnt)
-
-print("\n每个类别的像素统计结果：")
-print(f"总像素数: {total_pixels}\n")
 
 class_names = [
     "background",
@@ -50,7 +43,7 @@ for cls_id in range(num_classes):
     print(f"{class_names[cls_id]}: {cls_pixels} pixels, ratio = {ratio:.6f} ({ratio*100:.2f}%)")
 
 
-# 总像素数: 222822400
+
 
 # background: 132887865 pixels, ratio = 0.614457 (61.45%)
 # river: 3540009 pixels, ratio = 0.016369 (1.64%)

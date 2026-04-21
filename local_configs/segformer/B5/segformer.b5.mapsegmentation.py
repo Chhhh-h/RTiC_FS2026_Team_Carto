@@ -51,25 +51,25 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             data_root=data_root,
-            img_dir='patches_640_split/images/training',
-            ann_dir='patches_640_split/annotations/training_background',
+            img_dir='patches_split/images/training',
+            ann_dir='patches_split/annotations/training',
             img_suffix='.png',
             seg_map_suffix='.tif', # 
             pipeline=train_pipeline)),
     val=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir='patches_640_split/images/validation',
-        ann_dir='patches_640_split/annotations/validation_background',
+        img_dir='patches_split/images/validation',
+        ann_dir='patches_split/annotations/validation',
         img_suffix='.png',
         seg_map_suffix='.tif',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        # img_dir='patches_640_split/images/validation',
-        # ann_dir='patches_640_split/annotations/validation_background',
-        img_dir='test_patches_img4_640_overlap320',
+        # img_dir='patches_split/images/validation',
+        # ann_dir='patches_split/annotations/validation',
+        img_dir='test_patches_img4_overlap',
         ann_dir=None,
         img_suffix='.png',
         seg_map_suffix='.tif',
@@ -92,27 +92,37 @@ model = dict(
         feature_strides=[4, 8, 16, 32],
         channels=128,
         dropout_ratio=0.1,
-        num_classes=8, # 修改类别数
+        num_classes=8, 
         norm_cfg=norm_cfg,
         align_corners=False,
         decoder_params=dict(embed_dim=768),
-        # #交叉熵损失+类别平衡
+        # class_weight CE
         # loss_decode=dict( 
         #     type='CrossEntropyLoss',
         #     use_sigmoid=False,
         #     loss_weight=1.0,
         #     class_weight=[0.0089, 0.3343, 0.0192, 1.0651, 4.2411, 1.3391, 0.8709, 0.1213])),
 
-        # 交叉熵损失+Dice损失+类别平衡
+        # class_weight CE + class_weight Dice loss
+        # loss_decode=dict(
+        #     type='CEDiceLoss',
+        #     loss_weight=1.0,
+        #     ce_weight=1.0,
+        #     dice_weight=1.0,
+        #     class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002])), 
+        
+        # OHEM CE + Dice loss
         loss_decode=dict(
-            type='CEDiceLoss',
-            loss_weight=1.0,
+            type='CEDiceOHEMLoss',
+            class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002],
             ce_weight=1.0,
             dice_weight=1.0,
-            class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002])), # 修改损失函数权重
-        
-        # 倒数平方根类别平衡：class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002]
-        # 倒数归一化： class_weight = [0.0089, 0.3343, 0.0192, 1.0651, 4.2411, 1.3391, 0.8709, 0.1213]
+            smooth=1.0,
+            exponent=2.0,
+            loss_weight=1.0,
+            thresh=None,
+            min_kept=100000 
+        )),
     
     # model training and testing settings
     train_cfg=dict(),

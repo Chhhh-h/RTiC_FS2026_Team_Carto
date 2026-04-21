@@ -20,9 +20,9 @@ echo "Job started on $(hostname) at $(date)"
 cd /cluster/scratch/pangyi/reto/SegFormer || exit 1
 mkdir -p logs
 
-CONFIG_PATH="/cluster/scratch/pangyi/reto/SegFormer/local_configs/segformer/B5/segformer.b5.640x640.ade.160k.py"
-CHECKPOINT_PATH="/cluster/scratch/pangyi/reto/expt_results/b5_640_160k_classweight_batch2_cedice/iter_124000.pth"
-OUT_PKL="/cluster/scratch/pangyi/reto/submission_result/test_124000/submission_results.pkl"
+CONFIG_PATH="/cluster/scratch/pangyi/reto/SegFormer/local_configs/segformer/B5/segformer.b5.640x640.ade.160kweightsample.py"
+CHECKPOINT_PATH="/cluster/scratch/pangyi/reto/expt_results/160k_batch4_cedice_weightedsample/iter_64000.pth"
+OUT_PKL="/cluster/scratch/pangyi/reto/submission_result/result_img4/submission_results.pkl"
 
 python /cluster/scratch/pangyi/reto/SegFormer/tools/test.py "$CONFIG_PATH" \
     "$CHECKPOINT_PATH" \

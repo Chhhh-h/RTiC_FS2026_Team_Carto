@@ -219,13 +219,6 @@ def main():
 
     print("Final stitched map shape:", segmentation_map.shape)
 
-    # # save the whole image to npy
-    # np.save(output_dir / "segmentation_map.npy", segmentation_map)
-
-    # # save as png
-    # # Note: This is just the label image saved directly, not necessarily visually appealing
-    # cv2.imwrite(str(output_dir / "segmentation_map.png"), segmentation_map)
-
     # Save binary masks for each class
     binary_masks = extract_binary_masks(segmentation_map, num_classes)
     np.save(output_dir / "binary_masks.npy", binary_masks)

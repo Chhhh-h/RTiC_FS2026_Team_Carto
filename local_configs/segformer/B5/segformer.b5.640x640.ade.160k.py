@@ -13,7 +13,7 @@ img_norm_cfg = dict(
 crop_size = (640, 640)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', reduce_zero_label=False),# 是否将0类标签减1，变为255作为背景忽略 （这里背景已经提前被设置成255了）
+    dict(type='LoadAnnotations', reduce_zero_label=False),
     dict(type='Resize', img_scale=(2048, 640), ratio_range=(0.5, 2.0)),
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
@@ -88,7 +88,7 @@ model = dict(
         feature_strides=[4, 8, 16, 32],
         channels=128,
         dropout_ratio=0.1,
-        num_classes=8, # 修改类别数
+        num_classes=8, 
         norm_cfg=norm_cfg,
         align_corners=False,
         decoder_params=dict(embed_dim=768),
@@ -102,7 +102,7 @@ model = dict(
             exponent=2.0,
             loss_weight=1.0,
             thresh=None,
-            min_kept=100000 # 只取 hardest 的 10 万个有效像素
+            min_kept=100000 
         )),
 
         # cedice loss
@@ -111,10 +111,10 @@ model = dict(
         #     loss_weight=1.0,
         #     ce_weight=1.0,
         #     dice_weight=1.0,
-        #     class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002])), # 修改损失函数权重
+        #     class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002])),
         
-        # 倒数平方根类别平衡：class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002]
-        # 倒数归一化： class_weight = [0.0089, 0.3343, 0.0192, 1.0651, 4.2411, 1.3391, 0.8709, 0.1213]
+        # reciprical sqrt root：class_weight=[0.1627, 0.9959, 0.2388, 1.7779, 3.5458, 1.9927, 1.6070, 0.6002]
+        # normalization： class_weight = [0.0089, 0.3343, 0.0192, 1.0651, 4.2411, 1.3391, 0.8709, 0.1213]
     
     # model training and testing settings
     train_cfg=dict(),
