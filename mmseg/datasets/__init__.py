@@ -19,5 +19,5 @@ __all__ = [
     'DATASETS', 'build_dataset', 'PIPELINES', 'CityscapesDataset',
     'PascalVOCDataset', 'ADE20KDataset', 'PascalContextDataset',
     'ChaseDB1Dataset', 'DRIVEDataset', 'HRFDataset', 'STAREDataset', 'MapillaryDataset', 'CocoStuff',
-    'MapDataset','MapBackgroundDataset'
+    'MapDataset', 'MapBackgroundDataset'
 ]

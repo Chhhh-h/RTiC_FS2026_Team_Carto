@@ -6,7 +6,7 @@ import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import build_optimizer, build_runner
 
-from mmseg.core import DistEvalHook, EvalHook
+from mmseg.core import DistEvalHook, EvalHook, NamedDistEvalHook, NamedEvalHook
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import get_root_logger
 
@@ -96,17 +96,31 @@ def train_segmentor(model,
 
     # register eval hooks
     if validate:
-        val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
-        val_dataloader = build_dataloader(
-            val_dataset,
-            samples_per_gpu=1,
-            workers_per_gpu=cfg.data.workers_per_gpu,
-            dist=distributed,
-            shuffle=False)
-        eval_cfg = cfg.get('evaluation', {})
+        eval_cfg = cfg.get('evaluation', {}).copy()
         eval_cfg['by_epoch'] = cfg.runner['type'] != 'IterBasedRunner'
-        eval_hook = DistEvalHook if distributed else EvalHook
-        runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
+
+        if 'vals' in cfg.data:
+            eval_hook = NamedDistEvalHook if distributed else NamedEvalHook
+            for prefix, val_cfg in cfg.data.vals.items():
+                val_dataset = build_dataset(val_cfg, dict(test_mode=True))
+                val_dataloader = build_dataloader(
+                    val_dataset,
+                    samples_per_gpu=1,
+                    workers_per_gpu=cfg.data.workers_per_gpu,
+                    dist=distributed,
+                    shuffle=False)
+                runner.register_hook(
+                    eval_hook(val_dataloader, prefix=prefix, **eval_cfg))
+        else:
+            val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
+            val_dataloader = build_dataloader(
+                val_dataset,
+                samples_per_gpu=1,
+                workers_per_gpu=cfg.data.workers_per_gpu,
+                dist=distributed,
+                shuffle=False)
+            eval_hook = DistEvalHook if distributed else EvalHook
+            runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
 
     if cfg.resume_from:
         runner.resume(cfg.resume_from)

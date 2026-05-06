@@ -91,6 +91,56 @@ class DistEvalHook(EvalHook):
             print('\n')
             self.evaluate(runner, results)
 
+
+class NamedEvalHook(EvalHook):
+    """Evaluation hook with metric name prefix."""
+
+    def __init__(self,
+                 dataloader,
+                 interval=1,
+                 by_epoch=False,
+                 prefix='val',
+                 **eval_kwargs):
+        super().__init__(
+            dataloader=dataloader,
+            interval=interval,
+            by_epoch=by_epoch,
+            **eval_kwargs)
+        self.prefix = prefix
+
+    def evaluate(self, runner, results):
+        eval_res = self.dataloader.dataset.evaluate(
+            results, logger=runner.logger, **self.eval_kwargs)
+        for name, val in eval_res.items():
+            runner.log_buffer.output[f'{self.prefix}.{name}'] = val
+        runner.log_buffer.ready = True
+
+
+class NamedDistEvalHook(DistEvalHook):
+    """Distributed evaluation hook with metric name prefix."""
+
+    def __init__(self,
+                 dataloader,
+                 interval=1,
+                 gpu_collect=False,
+                 by_epoch=False,
+                 prefix='val',
+                 **eval_kwargs):
+        super().__init__(
+            dataloader=dataloader,
+            interval=interval,
+            gpu_collect=gpu_collect,
+            by_epoch=by_epoch,
+            **eval_kwargs)
+        self.prefix = prefix
+
+    def evaluate(self, runner, results):
+        eval_res = self.dataloader.dataset.evaluate(
+            results, logger=runner.logger, **self.eval_kwargs)
+        for name, val in eval_res.items():
+            runner.log_buffer.output[f'{self.prefix}.{name}'] = val
+        runner.log_buffer.ready = True
+
     def after_train_epoch(self, runner):
         """After train epoch hook."""
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):

@@ -119,3 +119,15 @@ pretrained/
 *.pth
 trash/
 trash
+
+# Local competition data and generated artifacts
+data_competition_original/
+predictions_final*/
+logs/
+pngs/
+submission_final*.csv
+*.out
+*.err
+*.npy
+*.pkl
+.codex
