@@ -31,6 +31,7 @@ train_dataloader = dict(
     batch_size=1,
     num_workers=2,
     persistent_workers=True,
+    sampler=dict(type="InfiniteSampler", shuffle=True),
     dataset=dict(
         data_root=data_root,
         metainfo=metainfo,

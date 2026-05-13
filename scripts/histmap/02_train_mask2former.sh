@@ -10,18 +10,13 @@
 #SBATCH -e logs/%x_%j.err
 
 source /cluster/home/caizhi/miniconda3/etc/profile.d/conda.sh
-conda activate "${CONDA_ENV_NAME:-mmseg}"
+conda activate mmseg
 set -euo pipefail
 
 cd /cluster/scratch/caizhi/MMDetection
-export PYTHONPATH=$PWD:${PYTHONPATH:-}
+export PYTHONPATH=/cluster/scratch/caizhi/MMDetection
 
-CONFIG="${1:-configs/histmap/mask2former_r50_histblock_1024.py}"
-WORK_DIR="${2:-work_dirs/histmap_mask2former_r50}"
-RESUME_FROM="${3:-work_dirs/histmap_mask2former_r50/iter_5000.pth}"
-
-if [ -n "$RESUME_FROM" ]; then
-  python tools/train.py "$CONFIG" --work-dir "$WORK_DIR" --resume "$RESUME_FROM"
-else
-  python tools/train.py "$CONFIG" --work-dir "$WORK_DIR"
-fi
+python tools/train.py \
+  configs/histmap/mask2former_r50_histblock_1024.py \
+  --work-dir work_dirs/histmap_mask2former_r50 \
+  --resume auto

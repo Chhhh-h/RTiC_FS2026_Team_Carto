@@ -9,41 +9,34 @@
 #SBATCH -e logs/%x_%j.err
 
 source /cluster/home/caizhi/miniconda3/etc/profile.d/conda.sh
-conda activate "${CONDA_ENV_NAME:-mmseg}"
+conda activate mmseg
 set -euo pipefail
 
 cd /cluster/scratch/caizhi/MMDetection
 
-DATASET_ROOT="${DATASET_ROOT:-dataset}"
-OUTPUT_ROOT="${OUTPUT_ROOT:-data/histmap_instance}"
-PATCH_SIZE="${PATCH_SIZE:-1024}"
-STRIDE="${STRIDE:-768}"
-MIN_FULL_AREA="${MIN_FULL_AREA:-25}"
-MIN_VISIBLE_AREA="${MIN_VISIBLE_AREA:-25}"
-
 python tools/histmap/prepare_histmap_instance_coco.py \
-  --dataset-root "$DATASET_ROOT" \
-  --output-root "$OUTPUT_ROOT" \
-  --patch-size "$PATCH_SIZE" \
-  --stride "$STRIDE" \
-  --min-full-area "$MIN_FULL_AREA" \
-  --min-visible-area "$MIN_VISIBLE_AREA" \
+  --dataset-root dataset \
+  --output-root data/histmap_instance \
+  --patch-size 1024 \
+  --stride 768 \
+  --min-full-area 25 \
+  --min-visible-area 25 \
   --clean
 
 python tools/histmap/prepare_histmap_test_patches.py \
-  --dataset-root "$DATASET_ROOT" \
+  --dataset-root dataset \
   --split validation \
   --output-split val_full \
-  --output-root "$OUTPUT_ROOT" \
-  --patch-size "$PATCH_SIZE" \
-  --stride "$STRIDE" \
+  --output-root data/histmap_instance \
+  --patch-size 1024 \
+  --stride 768 \
   --clean
 
 python tools/histmap/prepare_histmap_test_patches.py \
-  --dataset-root "$DATASET_ROOT" \
+  --dataset-root dataset \
   --split test \
   --output-split test \
-  --output-root "$OUTPUT_ROOT" \
-  --patch-size "$PATCH_SIZE" \
-  --stride "$STRIDE" \
+  --output-root data/histmap_instance \
+  --patch-size 1024 \
+  --stride 768 \
   --clean
