@@ -1,0 +1,21 @@
+# Create from the repository root:
+#   conda env create -f environment.yml
+name: mmdetection
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - pytorch=2.1.*
+  - torchvision=0.16.*
+  - pytorch-cuda=11.8
+  - cython
+  - numpy
+  - pip:
+      - openmim
+      - "mmcv>=2.0.0rc4,<2.2.0"
+      - "mmengine>=0.7.1,<1.0.0"
+      - -e .
