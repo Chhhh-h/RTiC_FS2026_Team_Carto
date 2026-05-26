@@ -1,47 +1,47 @@
 # RTiC FS2026 Team Carto - Task2
 
-This branch contains the Task2 historical map building-block instance
-segmentation pipeline built on top of MMDetection. The code converts binary
-building masks into pseudo-instances, trains Mask2Former models, stitches
-patch-level predictions back to full maps, and exports submission CSV files.
+This repository branch contains our Task2 pipeline for extracting building
+block instances from historical map images and generating the required
+submission CSV.
 
-## What is Included
+## Task Pipeline
 
-- `configs/histmap/`: Mask2Former configs for the historical map instance
-  segmentation experiments.
-- `tools/histmap/prepare_histmap_instance_coco.py`: converts train/validation
-  masks into COCO-style instance segmentation patches.
-- `tools/histmap/prepare_histmap_test_patches.py`: prepares full-coverage
-  validation/test patches for inference.
-- `tools/histmap/infer_histmap_instance_patches.py`: runs patch inference,
-  stitches labels, optionally saves score maps and previews.
-- `tools/histmap/compare_mask2former_4ckpts.py`: summarizes validation logs
-  from several backbone/checkpoint experiments.
-- `scripts/histmap/*.sh`: Slurm entry points for data preparation, training,
-  fine-tuning, validation inference, and test prediction.
-- `scripts/histmap/label_map_to_submission.py`: converts instance label maps to
-  the required WKT submission CSV.
-- `scripts/histmap/postprocess.py`: post-processing utilities for cleaning and
-  merging stitched instance labels.
+The solution follows this workflow:
 
-## What is Not Uploaded
+1. Convert the provided binary building masks into pseudo-instance labels.
+2. Cut train, validation, and test images into overlapping 1024 x 1024 patches.
+3. Train Mask2Former instance segmentation models on the generated patches.
+4. Run patch-level inference on validation or test images.
+5. Stitch patch predictions back into full-size instance label maps.
+6. Convert instance label maps into WKT polygons for submission.
 
-Large or generated artifacts are intentionally excluded by `.gitignore`:
+## Repository Structure
 
-- `dataset/`: local input images and masks.
-- `data/`: generated COCO annotations and image patches.
-- `pretrained/`: downloaded model checkpoints.
-- `work_dirs/`: training checkpoints, logs, predictions, previews, and
-  submission outputs.
-- `logs/`: Slurm stdout/stderr files.
-- `*.pth`, `*.pt`, `*.ckpt`, and other model/export binaries.
+```text
+configs/histmap/
+  Model configs used for Task2 experiments.
 
-This keeps the GitHub branch code-only and avoids pushing hundreds of MB of
-checkpoints or private/local data.
+tools/histmap/
+  Data preparation, patch inference, and experiment-summary utilities.
 
-## Expected Local Layout
+scripts/histmap/
+  Slurm scripts for preparing data, training, inference, post-processing,
+  and submission generation.
+```
 
-Place the provided Task2 data under:
+Important files:
+
+```text
+tools/histmap/prepare_histmap_instance_coco.py
+tools/histmap/prepare_histmap_test_patches.py
+tools/histmap/infer_histmap_instance_patches.py
+scripts/histmap/label_map_to_submission.py
+scripts/histmap/postprocess.py
+```
+
+## Local Data Layout
+
+Place the Task2 data in the repository root:
 
 ```text
 dataset/
@@ -50,35 +50,35 @@ dataset/
   test/
 ```
 
-The scripts assume they are run from the MMDetection repository root. On the
-cluster, the current scripts use:
+Generated patches and annotations are written to:
 
 ```text
-/cluster/scratch/caizhi/MMDetection
+data/histmap_instance/
 ```
 
-Pretrained Mask2Former weights should be placed under `pretrained/`, for
-example:
+Training and inference outputs are written to:
 
 ```text
-pretrained/mask2former_r50_8xb2-lsj-50e_coco.pth
+work_dirs/
 ```
 
-## Workflow
+These data and output directories are not committed to Git.
 
-Prepare pseudo-instance training data and inference patches:
+## Run Commands
+
+Prepare pseudo-instance training data and validation/test patches:
 
 ```bash
 sbatch scripts/histmap/01_prepare_instance_data.sh
 ```
 
-Train the baseline R50 Mask2Former model:
+Train the baseline model:
 
 ```bash
 sbatch scripts/histmap/02_train_mask2former.sh
 ```
 
-Fine-tune from the best baseline checkpoint:
+Fine-tune from the selected baseline checkpoint:
 
 ```bash
 sbatch scripts/histmap/02_finetune_mask2former_best7000.sh
@@ -90,26 +90,33 @@ Run full-validation inference:
 sbatch scripts/histmap/03_infer_val_instance.sh
 ```
 
-Run test inference and generate a submission CSV:
+Run test inference and generate the submission:
 
 ```bash
 sbatch scripts/histmap/04_predict_test_instance.sh
 ```
 
-The final test submission is written locally to:
+The test submission is saved at:
 
 ```text
 work_dirs/histmap_mask2former_r50/test_instance/submission.csv
 ```
 
-## Notes
+## Files Excluded From Git
 
-- The training labels are pseudo-instances derived from connected components in
-  the binary ground-truth masks.
-- Patch inference uses a valid central window to reduce duplicate predictions
-  in overlapping patch areas.
-- Stitched instance label maps can be exported as WKT polygons through
-  `scripts/histmap/label_map_to_submission.py`.
-- This repository is based on MMDetection. For installation and framework
-  details, refer to the official MMDetection documentation:
-  https://mmdetection.readthedocs.io/
+The following files are local data, generated outputs, or large model binaries
+and should not be uploaded:
+
+```text
+dataset/
+data/
+pretrained/
+work_dirs/
+logs/
+*.pth
+*.pt
+*.ckpt
+```
+
+Only source code, configuration files, scripts, and documentation should be
+committed to this branch.
