@@ -13,7 +13,9 @@ The solution follows this workflow:
 3. Train Mask2Former instance segmentation models on the generated patches.
 4. Run patch-level inference on validation or test images.
 5. Stitch patch predictions back into full-size instance label maps.
-6. Convert instance label maps into WKT polygons for submission.
+6. Post-process stitched labels by fixing disconnected fragments, removing
+   small artifacts, filling holes, and regularizing polygon boundaries.
+7. Convert the cleaned instance label maps into WKT polygons for submission.
 
 ## Repository Structure
 
@@ -96,11 +98,31 @@ Run test inference and generate the submission:
 sbatch scripts/histmap/04_predict_test_instance.sh
 ```
 
-The test submission is saved at:
+The direct test submission is saved at:
 
 ```text
 work_dirs/histmap_mask2former_r50/test_instance/submission.csv
 ```
+
+Post-process the stitched test label maps and generate a cleaned submission:
+
+```bash
+python scripts/histmap/postprocess.py \
+  --input-root work_dirs/histmap_mask2former_r50/test_instance/label_maps \
+  --output-root work_dirs/histmap_mask2former_r50/test_instance/postprocess
+```
+
+This script reads `label_map.npy` files from each test image folder, fixes
+disconnected instance fragments, optionally merges adjacent touching instances,
+cleans small artifacts, fills holes, regularizes polygon boundaries, and writes
+the final CSV to:
+
+```text
+work_dirs/histmap_mask2former_r50/test_instance/postprocess/submission_mask2former.csv
+```
+
+It also saves cleaned label maps and preview images under the same
+`postprocess/` directory.
 
 ## Files Excluded From Git
 
