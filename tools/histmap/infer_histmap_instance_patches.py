@@ -30,6 +30,10 @@ def parse_args():
                         help="Minimum touching/overlap pixels required for cross-patch label merge.")
     parser.add_argument("--max-labels", default=65000, type=int)
     parser.add_argument("--save-preview", action="store_true")
+    parser.add_argument(
+        "--save-score-map",
+        action="store_true",
+        help="Save per-pixel max accepted instance score as score_map.npy and score_map.png.")
     return parser.parse_args()
 
 
@@ -131,10 +135,16 @@ def save_label_preview(label_map, path):
     cv2.imwrite(str(path), preview)
 
 
+def save_score_map(score_map, path):
+    score_u8 = (np.clip(score_map, 0.0, 1.0) * 255.0).round().astype(np.uint8)
+    cv2.imwrite(str(path), score_u8)
+
+
 def stitch_sample(model, sample_id, rows, args):
     image_h = max(int(row["image_height"]) for row in rows)
     image_w = max(int(row["image_width"]) for row in rows)
     label_map = np.zeros((image_h, image_w), dtype=np.uint32)
+    score_map = np.zeros((image_h, image_w), dtype=np.float32)
     roi = load_roi(args.dataset_root, args.dataset_split, sample_id, (image_h, image_w))
     next_label = 1
     accepted = 0
@@ -173,6 +183,7 @@ def stitch_sample(model, sample_id, rows, args):
                 continue
 
             target = label_map[y:y + h, x:x + w]
+            score_target = score_map[y:y + h, x:x + w]
             existing = target > 0
             area = int(mask.sum())
             if area == 0:
@@ -187,6 +198,7 @@ def stitch_sample(model, sample_id, rows, args):
                     skipped_area += 1
                     continue
                 target[assign] = merge_label
+                score_target[assign] = np.maximum(score_target[assign], float(scores[idx]))
                 accepted += 1
                 merged_touch += 1
                 continue
@@ -201,11 +213,13 @@ def stitch_sample(model, sample_id, rows, args):
             if next_label > args.max_labels:
                 raise RuntimeError(f"Too many labels for {sample_id}; increase --max-labels or reduce predictions")
             target[assign] = next_label
+            score_target[assign] = np.maximum(score_target[assign], float(scores[idx]))
             next_label += 1
             accepted += 1
 
     label_map[~roi] = 0
-    return label_map, accepted, skipped_area, skipped_overlap, merged_touch
+    score_map[~roi] = 0.0
+    return label_map, score_map, accepted, skipped_area, skipped_overlap, merged_touch
 
 
 def main():
@@ -219,9 +233,12 @@ def main():
     for sample_id in sorted(grouped):
         sample_dir = args.output_dir / sample_id
         sample_dir.mkdir(parents=True, exist_ok=True)
-        label_map, accepted, skipped_area, skipped_overlap, merged_touch = stitch_sample(model, sample_id, grouped[sample_id], args)
+        label_map, score_map, accepted, skipped_area, skipped_overlap, merged_touch = stitch_sample(model, sample_id, grouped[sample_id], args)
         np.save(sample_dir / "label_map.npy", label_map)
         cv2.imwrite(str(sample_dir / "label_map.tif"), label_map.astype(np.uint16))
+        if args.save_score_map:
+            np.save(sample_dir / "score_map.npy", score_map)
+            save_score_map(score_map, sample_dir / "score_map.png")
         if args.save_preview:
             save_label_preview(label_map, sample_dir / "instance_preview.png")
         summary_rows.append({

@@ -2,7 +2,7 @@
 
 Run from the MMDetection repository root: `/cluster/scratch/caizhi/MMDetection`.
 
-The scripts assume a conda environment named `mmdet`. Override it with `CONDA_ENV_NAME=...` if needed.
+The current Slurm scripts activate the `mmseg` conda environment.
 
 ## 1. Prepare pseudo-instance COCO data
 
@@ -42,6 +42,12 @@ Default work dir:
 work_dirs/histmap_mask2former_r50
 ```
 
+Optional fine-tuning from the best baseline checkpoint:
+
+```bash
+sbatch scripts/histmap/02_finetune_mask2former_best7000.sh
+```
+
 ## 3. Validate on the full validation map
 
 ```bash
@@ -65,6 +71,7 @@ Outputs:
 ```text
 work_dirs/histmap_mask2former_r50/test_instance/submission.csv
 work_dirs/histmap_mask2former_r50/test_instance/vector_vis/
+work_dirs/histmap_mask2former_r50/test_instance/binary_maps/
 work_dirs/histmap_mask2former_r50/test_instance/label_maps/<ID>/label_map.tif
 ```
 
@@ -72,4 +79,4 @@ Notes:
 
 - The first version uses connected components as pseudo-instance GT. If the binary GT has touching building blocks, those will be learned as one instance.
 - Patch inference uses a central valid window (`--valid-margin 128`) to reduce duplicate predictions in overlap areas.
-- The stitched instance label map is converted to WKT by `/cluster/scratch/caizhi/vectorization/inference/label_map_to_submission.py`.
+- The stitched instance label map is converted to WKT by `scripts/histmap/label_map_to_submission.py`.

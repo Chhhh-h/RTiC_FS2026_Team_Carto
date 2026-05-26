@@ -18,7 +18,7 @@ export PYTHONPATH=/cluster/scratch/caizhi/MMDetection
 
 python tools/histmap/infer_histmap_instance_patches.py \
   configs/histmap/mask2former_r50_histblock_1024.py \
-  work_dirs/histmap_mask2former_r50/best_coco_segm_mAP_iter_5000.pth \
+  work_dirs/histmap_mask2former_r50/best_coco_segm_mAP_iter_160000.pth \
   --patch-index-csv data/histmap_instance/patch_index_val_full.csv \
   --output-dir work_dirs/histmap_mask2former_r50/val_full_instance/label_maps \
   --dataset-root dataset \
